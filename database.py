@@ -3,14 +3,9 @@ import os
 
 db_connection_string = os.environ['DB_CONNECTION_STRING']
 engine = create_engine(db_connection_string,
-                       connect_args = {
-                         'ssl':{
-                           "ssl_ca": "/etc/ssl/cert.pem"
-                         }
-                       }
-                      )
-
-
+                       connect_args={'ssl': {
+                         "ssl_ca": "/etc/ssl/cert.pem"
+                       }})
 
 
 def load_jobs_from_db():
@@ -21,11 +16,23 @@ def load_jobs_from_db():
       jobs.append(row._mapping)
     return jobs
   #print('Result Dict:', result_dicts)
+
+
 #with engine.connect() as conn:
 #  result = conn.execute(text("select * from jobs"))
-  
 
-  
+
+def load_job_from_db(id):
+  with engine.connect() as conn:
+    query = text("SELECT * FROM jobs WHERE id = :val").bindparams(val=id)
+    result = conn.execute(query)
+    row = result.fetchone()
+    if not row:
+      return None
+    else:
+      column_names = result.keys()
+      return dict(zip(column_names, row))
+
   #print('type(result) :', type(result))
   #result_all = result.all()
   #print('type(result_all):', type(result_all))
